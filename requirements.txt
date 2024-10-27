@@ -1,0 +1,3 @@
+novita_client==0.5.7
+openai==1.52.0
+python-dotenv==1.0.1
