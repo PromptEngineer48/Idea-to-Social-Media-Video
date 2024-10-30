@@ -79,7 +79,7 @@ def generate_summary(article_text):
         messages=[
             {
                 "role": "system",
-                "content": "Give me a youtube script in 40-50 sentences. Give me the script direclty. No requirement of saying things like here is a scripts etc. Also, add a thank you statement at the end and ask for subscription for the youtube channel. Keep the content engaging and funny.",
+                "content": "Summarize the article text given by the user below in 20-30 sentences, beginning directly with the main points. Do not include phrases like 'Here’s a summary of the article text' or 'In this article,' etc. Start directly with the summary content itself. Keep the content engaging and funny. End with a thank you and ask for subscription for the YouTube channel.",
             },
             {
                 "role": "user",
@@ -90,6 +90,7 @@ def generate_summary(article_text):
     )
 
     results = chat_completion_res.choices[0].message.content
+
     sentences = sent_tokenize(results)
     sentences = [sentence for sentence in sentences if sentence]
 
@@ -310,10 +311,10 @@ def generate_youtube_description_and_title(script):
     )
 
     results = chat_completion_res.choices[0].message.content
-    sentences = sent_tokenize(results)
-    sentences = [sentence for sentence in sentences if sentence]
+    # sentences = sent_tokenize(results)
+    # sentences = [sentence for sentence in sentences if sentence]
 
-    return sentences
+    return results
 
 
 import os
