@@ -5,3 +5,4 @@ deepgram-sdk
 exa_py
 regex
 pydub
+gradio

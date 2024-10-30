@@ -2,6 +2,7 @@
 
 
 import os
+import gradio as gr
 import requests
 import time
 from exa_py import Exa
@@ -11,6 +12,10 @@ from typing import Union, List
 import nltk
 from nltk.tokenize import sent_tokenize
 from pydub import AudioSegment
+import moviepy.editor as mp
+from PIL import Image
+import random
+import re
 
 # Ensure you download the punkt tokenizer if you haven't done so
 nltk.download("punkt")
@@ -68,7 +73,7 @@ def web_scrapper(search_query):
 
     print(f"{len(results)} items total, stored in result_items:")
 
-    return result_items
+    return result_items, urls
 
 
 def generate_summary(article_text):
@@ -79,7 +84,7 @@ def generate_summary(article_text):
         messages=[
             {
                 "role": "system",
-                "content": "Summarize the article text given by the user below in 20-30 sentences, beginning directly with the main points. Do not include phrases like 'Here’s a summary of the article text' or 'In this article,' etc. Start directly with the summary content itself. Keep the content engaging and funny. End with a thank you and ask for subscription for the YouTube channel.",
+                "content": "Summarize the article text given by the user below in 4-5 sentences strictly, beginning directly with the main points. Do not include phrases like 'Here’s a summary of the article text' or 'In this article,' etc. Start directly with the summary content itself. Keep the content engaging and funny. Always end with a thank you note and ask for subscription for the YouTube channel.",
             },
             {
                 "role": "user",
@@ -91,7 +96,17 @@ def generate_summary(article_text):
 
     results = chat_completion_res.choices[0].message.content
 
-    sentences = sent_tokenize(results)
+    # Find the first colon and take everything after it
+    first_colon_index = results.find(":")
+
+    if first_colon_index != -1:
+        summary_content = results[
+            first_colon_index + 1 :
+        ].strip()  # Take content after the first colon
+    else:
+        summary_content = results  # In case there's no colon, use the full result
+
+    sentences = sent_tokenize(summary_content)
     sentences = [sentence for sentence in sentences if sentence]
 
     return sentences
@@ -300,7 +315,7 @@ def generate_youtube_description_and_title(script):
         messages=[
             {
                 "role": "system",
-                "content": "Generate a catchy youtube title and an excellent description for my youtube video based on the script given below. Also, include lots of hashtags. Remember you are creating a youtube video title and description.",
+                "content": "Generate a catchy youtube title and an excellent long description for my youtube video based on the script given below. Also, include lots of hashtags. Remember you are creating a youtube video title and description.",
             },
             {
                 "role": "user",
@@ -311,8 +326,6 @@ def generate_youtube_description_and_title(script):
     )
 
     results = chat_completion_res.choices[0].message.content
-    # sentences = sent_tokenize(results)
-    # sentences = [sentence for sentence in sentences if sentence]
 
     return results
 
@@ -398,30 +411,255 @@ def save_description_and_title_to_file(content: str, filename: str) -> None:
     try:
         with open(filename, "w") as file:
             file.write(content)
-        print(f"Content successfully saved to {filename}")
+        print(f"\nDesc and Title successfully saved to {filename}")
     except Exception as e:
-        print(f"An error occurred while saving the file: {e}")
+        print(f"\nAn error occurred while saving the file: {e}")
 
 
-search_query = "Latest News on Robotics"
+# search_query = "Latest News on Robotics"
 
-article_text = web_scrapper(search_query)
-sentences = generate_summary(article_text)
-save_sentences_to_file(sentences, "output/script.txt")
+# article_text = web_scrapper(search_query)
+# sentences = generate_summary(article_text)
+# save_sentences_to_file(sentences, "output/script.txt")
 
-print(f"Summarized version:\n{sentences}\n")
+# print(f"Summarized version:\n{sentences}\n")
 
-paragraph = read_file_as_paragraph("output/script.txt")
-print(paragraph)
+# paragraph = read_file_as_paragraph("output/script.txt")
+# print(paragraph)
 
-desc_and_title = generate_youtube_description_and_title(paragraph)
-save_description_and_title_to_file(desc_and_title, "output/description_and_title.txt")
+# desc_and_title = generate_youtube_description_and_title(paragraph)
+# save_description_and_title_to_file(desc_and_title, "output/description_and_title.txt")
 
 
-for idx, sentence in enumerate(sentences):
-    photo_description = generate_photo_prompt(sentence)
-    print(f"Photo Description for photo {idx}:\n{photo_description}\n")
-    generate_photo(photo_description, idx)
-    generate_voice(sentence, idx)
-    amplify_audio(idx)
-    print(f"Photo #{idx} done\n")
+# for idx, sentence in enumerate(sentences):
+#     photo_description = generate_photo_prompt(sentence)
+#     print(f"Photo Description for photo {idx}:\n{photo_description}\n")
+#     generate_photo(photo_description, idx)
+#     generate_voice(sentence, idx)
+#     amplify_audio(idx)
+#     print(f"Photo #{idx} done\n")
+
+
+def add_centered_subtitles(
+    input_clip,
+    text,
+    duration,
+    position=("center", "bottom"),
+    chunk_size=8,
+    word_delay=0.8,
+):
+    """
+    Adds centered subtitles to a video clip with groups of words appearing and fading out.
+
+    Parameters:
+    - input_clip: The video or image clip to add subtitles to.
+    - text: The subtitle text.
+    - duration: Duration for the full subtitle to appear.
+    - position: Position of the subtitle on the screen.
+    - chunk_size: Number of words per chunk.
+    - word_delay: Delay between each chunk appearance.
+
+    Returns:
+    - A video clip with grouped word subtitle overlays, centered on the screen.
+    """
+    words = text.split()
+    chunks = [
+        " ".join(words[i : i + chunk_size]) for i in range(0, len(words), chunk_size)
+    ]
+    chunk_clips = []
+
+    # Set y-position based on desired subtitle position
+    screen_width, screen_height = input_clip.size
+    y_position = (
+        screen_height - 100
+        if position[1] == "bottom"
+        else screen_height // 2 if position[1] == "center" else 100
+    )
+
+    for i, chunk in enumerate(chunks):
+        chunk_start_time = i * word_delay
+        chunk_clip = (
+            mp.TextClip(chunk, font="Arial", fontsize=32, color="blue")
+            .set_position(("center", y_position))
+            .set_start(chunk_start_time)
+            .set_duration(word_delay)
+            .crossfadein(0.2)
+            .crossfadeout(0.2)
+        )
+        chunk_clips.append(chunk_clip)
+
+    # Composite the chunks into the input clip
+    return mp.CompositeVideoClip([input_clip] + chunk_clips).set_duration(duration)
+
+
+def slow_zoom_effect(input_clip, zoom_factor=1.5, duration=5):
+    """
+    Creates a slow zoom-in effect on a video clip.
+
+    Parameters:
+    - input_clip: The video or image clip to zoom.
+    - zoom_factor: The amount to zoom by (e.g., 1.5 means 50% larger).
+    - duration: Duration over which the zoom effect will happen.
+
+    Returns:
+    - A video clip with the slow zoom effect applied.
+    """
+    # Apply the zoom effect by resizing gradually
+    zoomed_clip = input_clip.resize(
+        lambda t: 1 + (zoom_factor - 1) * (t / duration)
+    ).set_duration(duration)
+
+    return zoomed_clip
+
+
+def pan_effect(input_clip, direction="right", distance=0.2, duration=5):
+    if direction == "right":
+        return input_clip.set_position(
+            lambda t: (int(distance * t / duration * input_clip.size[0]), "center")
+        )
+    elif direction == "left":
+        return input_clip.set_position(
+            lambda t: (-int(distance * t / duration * input_clip.size[0]), "center")
+        )
+    elif direction == "down":
+        return input_clip.set_position(
+            lambda t: ("center", int(distance * t / duration * input_clip.size[1]))
+        )
+    elif direction == "up":
+        return input_clip.set_position(
+            lambda t: ("center", -int(distance * t / duration * input_clip.size[1]))
+        )
+
+
+def assemble_video(quantity, search_query):
+    clips = []
+    for i in range(0, quantity):  # Assuming 200 sentences
+        audio_clip = mp.AudioFileClip(f"audio/audio{i}.wav")
+        img_clip = mp.ImageClip(f"images/photo{i}.png").set_duration(
+            audio_clip.duration
+        )
+
+        img_clip = img_clip.fadein(1).fadeout(1)
+
+        if i == 0:
+            txt_clip = (
+                mp.TextClip(
+                    f"{search_query}",
+                    font="Gill-Sans-Ultra-Bold",
+                    fontsize=64,
+                    color="Red",
+                )
+                .set_position("center")
+                .set_duration(audio_clip.duration)
+            )
+
+            img_clip = img_clip.crossfadein(1).fadeout(1)
+
+            img_clip = mp.CompositeVideoClip([img_clip, txt_clip]).set_audio(audio_clip)
+
+        else:
+            # Apply the zoom effect to the image clip
+            zoomed_clip = slow_zoom_effect(
+                img_clip,
+                zoom_factor=round(random.uniform(1, 1.6), 1),
+                duration=audio_clip.duration,
+            )
+            img_clip = zoomed_clip.set_audio(audio_clip)
+
+        clips.append(img_clip)
+
+    final_clip = mp.concatenate_videoclips(clips, method="compose")
+    final_clip.write_videofile("output/final_video.mp4", fps=20)
+
+
+def process_request(search_query):
+    # Web scrape, summarize, generate images and audio
+    article_text, urls = web_scrapper(search_query)
+    sentences = generate_summary(article_text)
+    save_sentences_to_file(sentences, "output/script.txt")
+
+    print(f"Summarized version:\n{sentences}\n")
+
+    print(f"There are {len(sentences)} in the summarized parapragraph.\n")
+
+    paragraph = read_file_as_paragraph("output/script.txt")
+    print("Paragraph:", paragraph)
+
+    desc_and_title = generate_youtube_description_and_title(paragraph)
+    save_description_and_title_to_file(
+        desc_and_title, "output/description_and_title.txt"
+    )
+
+    output_images = []
+    output_video = []
+
+    # Use actual sentences here; this is just a placeholder
+    for idx, sentence in enumerate(sentences):  # Replace with actual sentences
+        photo_description = generate_photo_prompt(sentence)
+        print(f"\nPhoto Description for photo {idx}:\n{photo_description}\n")
+        generate_photo(photo_description, idx)
+        generate_voice(sentence, idx)
+        amplify_audio(idx)
+        print(f"Photo #{idx} done\n")
+
+        # Create a tuple for each image: (image path, caption)
+        image_path = f"images/photo{idx}.png"
+        caption = f"Generated image for search query: '{search_query}'"
+        output_images.append((image_path, caption))
+
+    assemble_video(len(sentences), search_query)
+    video_path = f"output/finalvideo.mp4"
+    caption = f"Generated video for search query: '{search_query}'"
+    output_video.append((video_path, caption))
+
+    return output_images, paragraph, output_video, desc_and_title, urls
+
+
+import gradio as gr
+
+
+# Gradio Interface function
+def gradio_interface(search_query):
+    images, paragraph, output_video, desc_and_title, urls = process_request(
+        search_query
+    )  # This should return a list of tuples
+    return (
+        images,
+        paragraph,
+        output_video,
+        desc_and_title,
+        urls,
+    )  # Return the list of tuples (image_path, caption)
+
+
+# Setting up Gradio UI components
+with gr.Blocks() as demo:
+    gr.Markdown("# Auto Video Generator")
+    search_input = gr.Textbox(
+        label="Enter Search Query", placeholder="Latest News on Robotics"
+    )
+    submit_button = gr.Button("Generate")
+
+    urls = gr.Textbox(label="URLs of the articles used in the video", interactive=False)
+
+    # Textbox to display the generated paragraph
+    paragraph_output = gr.Textbox(label="Generated Paragraph", interactive=False)
+
+    desc_and_title = gr.Textbox(
+        label="Generated Description and Title", interactive=False
+    )
+
+    # Gallery to display generated images
+    image_output = gr.Gallery(label="Generated Images", show_label=True, scale=3)
+
+    video_output = gr.Gallery(label="Generated Video", show_label=True, scale=3)
+
+    # Connect the button click to the interface function
+    submit_button.click(
+        fn=gradio_interface,
+        inputs=search_input,
+        outputs=[image_output, paragraph_output, video_output, desc_and_title, urls],
+    )
+
+# Launch the Gradio app
+demo.launch()

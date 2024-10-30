@@ -117,14 +117,6 @@ def assemble_video():
             )
 
             img_clip = img_clip.crossfadein(1).fadeout(1)
-            # img_clip = pan_effect(
-            #     img_clip, direction="right", distance=0.05, duration=5
-            # )
-            # img_clip = add_centered_subtitles(
-            #     img_clip,
-            #     "In the world of generative AI, from day zero, OpenAI’s ChatGPT was sensational, and the company continued to maintain that momentum by releasing new and improved GPT models over the last two years. ",
-            #     audio_clip.duration,
-            # )
 
             img_clip = mp.CompositeVideoClip([img_clip, txt_clip]).set_audio(audio_clip)
 
