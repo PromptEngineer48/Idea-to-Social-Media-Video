@@ -18,7 +18,6 @@ Before running this project, make sure you have the following API keys:
 - EXA API key (for web scraping)
 - Novita AI API key (for image generation)
 - Deepgram API key (for text-to-speech)
-- Flux API key
 
 ## 🛠️ Installation
 
@@ -33,7 +32,7 @@ source AUTOVIDEOS/bin/activate  # On Windows: AUTOVIDEOS\Scripts\activate
 pip install gradio requests exa-py python-dotenv openai nltk pydub moviepy Pillow novita-client deepgram-sdk
 ```
 
-3. Create a `.env` file in the project root with your API keys:
+3. Create a `.env` file in the project root or rename the `.env.example` to just `.env` name:
 ```env
 EXA_API_KEY=your_exa_api_key
 NOVITA_API_KEY=your_novita_api_key
