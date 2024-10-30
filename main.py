@@ -414,7 +414,7 @@ paragraph = read_file_as_paragraph("output/script.txt")
 print(paragraph)
 
 desc_and_title = generate_youtube_description_and_title(paragraph)
-save_description_and_title_to_file(desc_and_title, "description_and_title.txt")
+save_description_and_title_to_file(desc_and_title, "output/description_and_title.txt")
 
 
 for idx, sentence in enumerate(sentences):
