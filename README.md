@@ -21,7 +21,7 @@ An AI-powered tool that automatically generates video content from news articles
 
 Before running this project, make sure you have the following API keys:
 - EXA API key (for web scraping)
-- Novita AI API key (for image generation)
+- Novita AI API key (for LLM and image generation)
 - Deepgram API key (for text-to-speech)
 
 ## 🛠️ Installation
