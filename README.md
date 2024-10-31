@@ -19,6 +19,11 @@ Before running this project, make sure you have the following API keys:
 - Novita AI API key (for image generation)
 - Deepgram API key (for text-to-speech)
 
+## WorkFlow
+
+![save](https://github.com/user-attachments/assets/fc36e165-5d57-4690-b9c1-2f6e1f3b87db)
+
+
 ## 🛠️ Installation
 
 1. Create a virtual environment:
