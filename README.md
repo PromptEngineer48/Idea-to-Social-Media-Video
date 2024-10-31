@@ -34,7 +34,7 @@ source AUTOVIDEOS/bin/activate  # On Windows: AUTOVIDEOS\Scripts\activate
 
 2. Install required packages:
 ```bash
-pip install -r requirements_final.txt
+pip install -r requirements.txt
 ```
 
 3. Create a `.env` file in the project root with your API keys:
