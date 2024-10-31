@@ -4,7 +4,8 @@ An AI-powered tool that automatically generates video content from news articles
 
 ## WorkFlow
 
-![save](https://github.com/user-attachments/assets/fc36e165-5d57-4690-b9c1-2f6e1f3b87db)
+![Uploading save3.JPG…]()
+
 
 
 ## 🌟 Features
