@@ -2,6 +2,11 @@
 
 An AI-powered tool that automatically generates video content from news articles and search queries. This project combines web scraping, text summarization, voice generation, image generation, and text-to-speech to create engaging video content.
 
+## WorkFlow
+
+![save](https://github.com/user-attachments/assets/fc36e165-5d57-4690-b9c1-2f6e1f3b87db)
+
+
 ## 🌟 Features
 
 - Web scraping of recent news articles
@@ -18,11 +23,6 @@ Before running this project, make sure you have the following API keys:
 - EXA API key (for web scraping)
 - Novita AI API key (for image generation)
 - Deepgram API key (for text-to-speech)
-
-## WorkFlow
-
-![save](https://github.com/user-attachments/assets/fc36e165-5d57-4690-b9c1-2f6e1f3b87db)
-
 
 ## 🛠️ Installation
 
