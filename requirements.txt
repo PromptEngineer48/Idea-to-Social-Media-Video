@@ -6,3 +6,5 @@ exa_py
 regex
 pydub
 gradio
+nltk
+moviepy
